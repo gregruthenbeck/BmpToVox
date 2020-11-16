@@ -9,3 +9,4 @@ Makefile
 win32/
 x64/
 BmpToVox.vcxproj.user
+bmp2vox.zip
