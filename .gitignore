@@ -1,0 +1,11 @@
+.vs/
+bmp2vox
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Debug/
+Makefile
+win32/
+x64/
+BmpToVox.vcxproj.user
