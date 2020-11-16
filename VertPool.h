@@ -1,9 +1,14 @@
 ///  @file	VertPool.h
 ///  @brief	Implements class: VertPool
 ///
-///		TODO: File description (delete me?)
+///		Pools verts for re-use using a std::map. If a new point (Vec3) is near
+///     an old one, return the old index. Else, return a new index and insert
+///     the vert into the pool.
+/// 
+///		Uses min, span, and dim to set the behaviour of "GetKey(pos)" for deciding
+///     what is "near".
 ///
-///		Copyright 2011 Greg Ruthenbeck. Flinders University. Australia
+///		Copyright 2011 Greg Ruthenbeck
 ///
 ///  @author	Greg Ruthenbeck
 ///  @version	0.1
@@ -11,37 +16,15 @@
 
 #pragma once
 
-//#include <DXUT.h>
-//#include <nvMath.h>
 #include <vector>
 #include <set>
 #include <map>
 #include <utility> // std::pair
 #include <iostream>
 
-//struct Vec3;
-//class TriDX; // defined in Utils.h
-
-//class IMT_VERTEX
-//{
-//public:
-//	IMT_VERTEX()  {}
-//	IMT_VERTEX(const nv::vec3f& p, const nv::vec3f& n) 
-//		: pos(p.x, p.y, p.z), norm(n.x, n.y, n.z) {}
-//	IMT_VERTEX(const nv::vec3f& p, const Vec3& n) 
-//		: pos(p.x, p.y, p.z), norm(n) {}
-//	IMT_VERTEX(const Vec3& p, const Vec3& n) 
-//		: pos(p), norm(n) {}
-//	IMT_VERTEX(const nv::vec3f& p) 
-//		: pos(p.x, p.y, p.z) {}
-//	Vec3 pos;
-//	Vec3 norm;
-//};
-
-
-//#define LOG_ERROR(x) { std::cout << "ERR " << x << std::endl; }
-//#define LOG(x)		 { std::cout << "INF " << x << std::endl; }
-//#define LOG_WARN(x)  { std::cout << "WAR " << x << std::endl; }
+#define LOG_ERROR(x) { std::cout << "ERR " << __FILE__ << "(" << __LINE__ << "), " << x << std::endl; }
+#define LOG(x)		 { std::cout << "INF " << __FILE__ << "(" << __LINE__ << "), " << x << std::endl; }
+#define LOG_WARN(x)  { std::cout << "WAR " << __FILE__ << "(" << __LINE__ << "), " << x << std::endl; }
 
 typedef std::set<unsigned int> SetUInt;
 typedef std::map<unsigned int, SetUInt > MapUIntToSetUInt;
@@ -53,7 +36,8 @@ typedef unsigned int VertIdType;
 class Vec3
 {
 public:
-	Vec3(){}
+	Vec3()
+		: x(.0f), y(.0f), z(.0f) {}
 	Vec3(const float _x, const float _y, const float _z)
 		: x(_x), y(_y), z(_z) {}
 
@@ -126,7 +110,7 @@ template<class VertT>
 const VertIdType& VertPool<VertT>::AddVertRef(const VertT& v)
 {
 	const KeyType key = GetKey(v.pos);
-	map<KeyType, std::pair<VertIdType, RefCountType> >::iterator iPRef = mRefs.find(key);
+	std::map<KeyType, std::pair<VertIdType, RefCountType> >::iterator iPRef = mRefs.find(key);
 
 	// If we don't have a nearby vert already in the pool
 	if (iPRef == mRefs.end())
@@ -143,7 +127,7 @@ const VertIdType& VertPool<VertT>::AddVertRef(const VertT& v)
 			const VertIdType newVertId = mAvailable.back();
 			mAvailable.pop_back();
 
-			mRefs[key] = make_pair(newVertId, 1);
+			mRefs[key] = std::make_pair(newVertId, 1);
 			mVerts[newVertId] = v;
 		}
 	}
@@ -152,10 +136,9 @@ const VertIdType& VertPool<VertT>::AddVertRef(const VertT& v)
 
 	const VertIdType& vertIndex = mRefs[key].first;
 
-	// Average the existing normal (and position) with the newly referenced normal (and position)
-	std::vector<VertT>::iterator vIter = mVerts.begin() + vertIndex;
+	// Average the existing position with the newly referenced position
+	auto vIter = mVerts.begin() + vertIndex;
 	vIter->pos  = (vIter->pos + v.pos) * 0.5f;
-	//vIter->norm = (vIter->norm + v.norm) * 0.5f; // Could weight this average on TriDX area	
 
 	return vertIndex;
 }
@@ -171,7 +154,7 @@ template<class VertT>
 void VertPool<VertT>::RemoveVertRef(const Vec3& pos)
 {
 	const KeyType key = GetKey(pos);
-	map<KeyType, std::pair<VertIdType, RefCountType> >::iterator iPRef = mRefs.find(key);
+	std::map<KeyType, std::pair<VertIdType, RefCountType> >::iterator iPRef = mRefs.find(key);
 
 	if (iPRef != mRefs.end())
 	{
@@ -186,7 +169,7 @@ void VertPool<VertT>::RemoveVertRef(const Vec3& pos)
 		{
 			// *** Delete the vert from the pool
 			// Find the ID of the vert in the map
-			map<KeyType, std::pair<VertIdType, RefCountType> >::iterator i = mRefs.find(key);
+			std::map<KeyType, std::pair<VertIdType, RefCountType> >::iterator i = mRefs.find(key);
 			// Store the ID of the vert for re-use
 			mAvailable.push_back(i->second.first);
 			// Delete the vert from the ref map

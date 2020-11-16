@@ -1,6 +1,17 @@
+///  @file	main.cpp
+///  @brief	Entry point for BmpToVox
+///
+///		A C++ command-line utility for converting a stack of images into a 
+///		cube-lattice. Works for very large datasets. Output is either ascii
+///		or binary indexed nodes.
+///
+///		Copyright 2020 Greg Ruthenbeck
+///
+///  @author	Greg Ruthenbeck
+///  @version	0.1
+///  Originally created:   April 2011
 
-
-
+using namespace std;
 
 #include <iostream>
 #include <iomanip>
@@ -10,7 +21,6 @@
 #include "easybmp/easybmp.h"
 #include "VertPool.h"
 
-using namespace std;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
@@ -60,7 +70,7 @@ int main(int ac, char** av)
 	desc.add_options()
 		("help", "produce help message")
 		("s", po::bool_switch(), "silent")
-		("t", po::value<short>()->default_value(128), "threshold grey-level [0, 255]")
+		("t", po::value<short>()->default_value(128), "threshold gray-level [0, 255]")
 		("n", po::bool_switch(), "invert (negate) the image")
 		("i", po::value<string>()->default_value("."), "input folder (sorts contained BMPs)")
 		("o", po::value<string>()->default_value("nodes.txt"),   "output file for node data")
@@ -74,11 +84,11 @@ int main(int ac, char** av)
 
 	if (vm.count("help")) {
 		cout << desc << "\n";
-		cout << "BmpToVox. By Greg Ruthenbeck (C) 2014. Flinders University. Built " << __DATE__ << ". " << __TIME__ << ". Version $Rev: 17 $, $Date: 2014-08-28 11:09:25 +0930 (Thu, 28 Aug 2014) $." << endl;
+		cout << "BmpToVox. By Greg Ruthenbeck (C) 2014. Built " << __DATE__ << ". " << __TIME__ << ". " << endl;
 		cout << "This application can be used to generate a cube-lattice (nodes, elements) from bitmaps." << endl;
 		cout << "The input folder should contain only bitmaps that are part of the same sequence that are sequentially named." << endl;
 		cout << "Example:" << endl;
-		cout << "BmpToVox.exe --i MyImageStackBMPFolder --o nodes.txt --O indices.txt" << endl;
+		cout << "bmp2vox --i MyImageStackBMPFolder --o nodes.txt --O indices.txt" << endl;
 		return 1;
 	}
 
